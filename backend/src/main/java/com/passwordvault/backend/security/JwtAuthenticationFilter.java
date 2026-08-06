@@ -37,9 +37,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+       // String token = authHeader.substring(7);
+
+       // String email = jwtUtil.extractEmail(token);
+
         String token = authHeader.substring(7);
+        System.out.println("TOKEN = " + token);
 
         String email = jwtUtil.extractEmail(token);
+        System.out.println("EMAIL = " + email);
 
         if (email != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -59,6 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println("Authentication Success");
         }
 
         filterChain.doFilter(request, response);

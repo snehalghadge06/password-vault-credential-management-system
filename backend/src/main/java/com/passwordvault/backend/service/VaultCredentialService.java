@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.passwordvault.backend.entity.User;
 import com.passwordvault.backend.repository.UserRepository;
+import com.passwordvault.backend.util.AESUtil;
+import com.passwordvault.backend.repository.SharedCredentialRepository;
+import com.passwordvault.backend.dto.ShareCredentialRequest;
+import com.passwordvault.backend.entity.SharedCredential;
 
 import java.util.List;
 
@@ -21,19 +25,54 @@ public class VaultCredentialService {
 
         credential.setUser(user);
 
+        credential.setPassword(
+                AESUtil.encrypt(credential.getPassword())
+        );
+
         return repository.save(credential);
 
     }
 
     @Autowired
+    private SharedCredentialRepository sharedRepository;
+
+    @Autowired
     private UserRepository userRepository;
+
+    public void shareCredential(ShareCredentialRequest request) {
+
+        VaultCredential credential = repository
+                .findById(request.getCredentialId())
+                .orElseThrow(() -> new RuntimeException("Credential not found"));
+
+        User sharedUser = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        SharedCredential sharedCredential = new SharedCredential();
+
+        sharedCredential.setOwner(credential.getUser());
+        sharedCredential.setSharedWith(sharedUser);
+        sharedCredential.setCredential(credential);
+        sharedCredential.setPermission(request.getPermission());
+
+        sharedRepository.save(sharedCredential);
+    }
 
     public List<VaultCredential> getAllCredentials(String email) {
 
+        System.out.println("Inside getAllCredentials()");
+        System.out.println("Email = " + email);
+
         User user = userRepository.findByEmail(email).orElseThrow();
 
-        return repository.findByUserId(user.getId());
+        System.out.println("User ID = " + user.getId());
 
+        List<VaultCredential> credentials = repository.findByUserId(user.getId());
+
+        System.out.println("Records = " + credentials.size());
+
+        return credentials;
     }
 
     public void deleteCredential(Long id, String email) {
@@ -54,11 +93,38 @@ public class VaultCredentialService {
 
     public VaultCredential updateCredential(VaultCredential credential, String email) {
 
-        User user = userRepository.findByEmail(email).orElseThrow();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        credential.setUser(user);
+        VaultCredential existingCredential = repository.findById(credential.getId())
+                .orElseThrow(() -> new RuntimeException("Credential not found"));
+
+        // Owner can always update
+        if (existingCredential.getUser().getId().equals(user.getId())) {
+            credential.setUser(existingCredential.getUser());
+            return repository.save(credential);
+        }
+
+        // Check shared permission
+        SharedCredential sharedCredential = sharedRepository
+                .findByCredentialIdAndSharedWith(existingCredential.getId(), user)
+                .orElseThrow(() -> new RuntimeException("Access Denied"));
+
+        if ("READ".equalsIgnoreCase(sharedCredential.getPermission())) {
+            throw new RuntimeException("You have READ permission only.");
+        }
+
+        // WRITE permission
+        credential.setUser(existingCredential.getUser());
 
         return repository.save(credential);
+    }
 
+    public List<SharedCredential> getSharedCredentials(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return sharedRepository.findBySharedWith(user);
     }
 }
