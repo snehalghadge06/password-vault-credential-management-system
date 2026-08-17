@@ -66,9 +66,13 @@ public class VaultCredentialController {
 
     @PostMapping("/share")
     public ResponseEntity<String> shareCredential(
-            @RequestBody ShareCredentialRequest request) {
+            @RequestBody ShareCredentialRequest request,
+            Authentication authentication) {
 
-        service.shareCredential(request);
+        service.shareCredential(
+                request,
+                authentication.getName()
+        );
 
         return ResponseEntity.ok("Credential Shared Successfully");
     }

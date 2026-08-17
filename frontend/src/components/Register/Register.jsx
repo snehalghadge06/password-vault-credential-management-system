@@ -6,119 +6,310 @@ import { Link } from "react-router-dom";
 function Register() {
 
     const [user, setUser] = useState({
-       firstName: "",
-       lastName: "",
-       email: "",
-       password: ""
-   });
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: ""
+    });
+
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
-     setUser({
-        ...user,
-       [e.target.name]: e.target.value
-    });
+
+        setUser({
+            ...user,
+            [e.target.name]: e.target.value
+        });
     };
 
     const handleSubmit = async (e) => {
-  e.preventDefault();
 
-  try {
-    const response = await axios.post(
-      "http://localhost:8081/api/auth/register",
-      user
-    );
+        e.preventDefault();
 
-    alert(response.data);
+        try {
 
-    setUser({
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: ""
-    });
+            const response = await axios.post(
+                "http://localhost:8081/api/auth/register",
+                user
+            );
 
-  } catch (error) {
-    alert("Registration Failed");
-    console.error(error);
-  }
-};
+            alert(response.data);
 
-  return (
-    <div className="container mt-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
+            setUser({
+                firstName: "",
+                lastName: "",
+                email: "",
+                password: ""
+            });
 
-          <div className="card shadow p-4">
+        } catch (error) {
 
-            <h2 className="text-center mb-4">
-              Register
-            </h2>
+            console.error(error);
 
-            <form onSubmit={handleSubmit}>
+            alert("Registration Failed");
+        }
+    };
 
-              <div className="mb-3">
-                <label>First Name</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  className="form-control"
-                  placeholder="Enter First Name"
-                  value={user.firstName}
-                  onChange={handleChange}
-                />
-              </div>
+    return (
 
-              <div className="mb-3">
-                <label>Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  className="form-control"
-                  placeholder="Enter Last Name"
-                  value={user.lastName}
-                  onChange={handleChange}
-                />
-              </div>
+        <div className="register-page">
 
-              <div className="mb-3">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="form-control"
-                  placeholder="Enter Email"
-                  value={user.email}
-                  onChange={handleChange}
-                />
-              </div>
+            {/* LEFT SIDE */}
 
-              <div className="mb-3">
-                <label>Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control"
-                  placeholder="Enter Password"
-                  value={user.password}
-                  onChange={handleChange}
-                />
-              </div>
+            <div className="register-brand-section">
 
-              <button type="submit" className="btn btn-primary w-100">
-                Register
-              </button>
+                <div className="register-brand-content">
 
-               <p className="text-center mt-3">
-                  Already have an account? <Link to="/login">Login</Link>
-               </p>
-            </form>
+                    <div className="register-lock">
+                        🔐
+                    </div>
 
-          </div>
+                    <h1>PasswordVault</h1>
+
+                    <p className="register-brand-subtitle">
+                        Secure Credential Management System
+                    </p>
+
+                    <div className="register-features">
+
+                        <div className="register-feature">
+
+                            <span>🛡️</span>
+
+                            <div>
+                                <strong>Secure Your Credentials</strong>
+
+                                <small>
+                                    Store passwords safely in your private vault
+                                </small>
+                            </div>
+
+                        </div>
+
+
+                        <div className="register-feature">
+
+                            <span>🔑</span>
+
+                            <div>
+                                <strong>Strong Passwords</strong>
+
+                                <small>
+                                    Generate and manage secure passwords
+                                </small>
+                            </div>
+
+                        </div>
+
+
+                        <div className="register-feature">
+
+                            <span>🤝</span>
+
+                            <div>
+                                <strong>Controlled Sharing</strong>
+
+                                <small>
+                                    Share credentials with selected users
+                                </small>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {/* RIGHT SIDE */}
+
+            <div className="register-form-section">
+
+                <div className="register-card">
+
+                    <div className="register-mobile-logo">
+                        🔐
+                    </div>
+
+                    <h2>Create Account</h2>
+
+                    <p className="register-description">
+                        Create your secure PasswordVault account.
+                    </p>
+
+
+                    <form onSubmit={handleSubmit}>
+
+                        {/* FIRST + LAST NAME */}
+
+                        <div className="name-row">
+
+                            <div className="register-form-group">
+
+                                <label>First Name</label>
+
+                                <div className="register-input-wrapper">
+
+                                    <span>👤</span>
+
+                                    <input
+                                        type="text"
+                                        name="firstName"
+                                        placeholder="First name"
+                                        value={user.firstName}
+                                        onChange={handleChange}
+                                        required
+                                    />
+
+                                </div>
+
+                            </div>
+
+
+                            <div className="register-form-group">
+
+                                <label>Last Name</label>
+
+                                <div className="register-input-wrapper">
+
+                                    <span>👤</span>
+
+                                    <input
+                                        type="text"
+                                        name="lastName"
+                                        placeholder="Last name"
+                                        value={user.lastName}
+                                        onChange={handleChange}
+                                        required
+                                    />
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* EMAIL */}
+
+                        <div className="register-form-group">
+
+                            <label>Email Address</label>
+
+                            <div className="register-input-wrapper">
+
+                                <span>✉️</span>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    value={user.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* PASSWORD */}
+
+                        <div className="register-form-group">
+
+                            <label>Password</label>
+
+                            <div className="register-input-wrapper">
+
+                                <span>🔒</span>
+
+                                <input
+                                    type={
+                                        showPassword
+                                            ? "text"
+                                            : "password"
+                                    }
+                                    name="password"
+                                    placeholder="Create a secure password"
+                                    value={user.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                                <button
+                                    type="button"
+                                    className="register-password-toggle"
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                >
+                                    {showPassword ? "🙈" : "👁️"}
+                                </button>
+
+                            </div>
+
+                            <small className="password-hint">
+                                Use a strong password with letters,
+                                numbers and special characters.
+                            </small>
+
+                        </div>
+
+
+                        {/* REGISTER BUTTON */}
+
+                        <button
+                            type="submit"
+                            className="register-button"
+                        >
+                            Create Account
+                        </button>
+
+
+                        {/* LOGIN */}
+
+                        <p className="login-text">
+
+                            Already have an account?
+
+                            <Link to="/login">
+                                Sign In
+                            </Link>
+
+                        </p>
+
+                    </form>
+
+
+                    {/* SECURITY */}
+
+                    <div className="register-security">
+
+                        <span>
+                            🛡️
+                        </span>
+
+                        <div>
+
+                            <strong>Your security matters</strong>
+
+                            <small>
+                                Your account is protected by secure authentication.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default Register;

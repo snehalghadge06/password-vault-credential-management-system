@@ -42,7 +42,8 @@ public class UserService {
 
     public String loginUser(LoginRequest request) {
 
-        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+        Optional<User> userOptional =
+                userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
             return "Invalid Email";
@@ -50,7 +51,18 @@ public class UserService {
 
         User user = userOptional.get();
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        System.out.println("LOGIN EMAIL = " + request.getEmail());
+        System.out.println("DB EMAIL = " + user.getEmail());
+        System.out.println("PASSWORD MATCH = " +
+                passwordEncoder.matches(
+                        request.getPassword(),
+                        user.getPassword()
+                ));
+
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+
             return "Invalid Password";
         }
 

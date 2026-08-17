@@ -37,35 +37,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-       // String token = authHeader.substring(7);
-
-       // String email = jwtUtil.extractEmail(token);
-
         String token = authHeader.substring(7);
+
         System.out.println("TOKEN = " + token);
 
-        String email = jwtUtil.extractEmail(token);
-        System.out.println("EMAIL = " + email);
+        try {
 
-        if (email != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+            String email = jwtUtil.extractEmail(token);
 
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(email);
+            System.out.println("EMAIL = " + email);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+            if (email != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-            );
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(email);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            System.out.println("Authentication Success");
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authentication);
+
+                System.out.println("Authentication Success");
+            }
+
+        } catch (Exception e) {
+
+            System.out.println("Invalid JWT Token");
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

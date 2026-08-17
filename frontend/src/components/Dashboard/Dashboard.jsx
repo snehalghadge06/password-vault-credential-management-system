@@ -1,615 +1,1170 @@
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
     addCredential,
     getCredentials,
     updateCredential,
     deleteCredentialById,
-     generatePassword,
+    generatePassword,
     shareCredential,
     getSharedCredentials
 } from "../../services/VaultService";
 
 function Dashboard() {
 
-    const [credential, setCredential] = useState({
+    const emptyCredential = {
         website: "",
         url: "",
         username: "",
         password: "",
         notes: ""
-    });
+    };
 
+    const [credential, setCredential] = useState(emptyCredential);
     const [credentials, setCredentials] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [visiblePasswords, setVisiblePasswords] = useState({});
+    const [sharedCredentials, setSharedCredentials] = useState([]);
+
     const [isEdit, setIsEdit] = useState(false);
     const [editId, setEditId] = useState(null);
+
     const [showForm, setShowForm] = useState(false);
-    const [strength, setStrength] = useState("");
     const [showShare, setShowShare] = useState(false);
 
-const [shareData, setShareData] = useState({
-    credentialId: "",
-    email: "",
-    permission: "READ"
-});
+    const [strength, setStrength] = useState("");
+    const [search, setSearch] = useState("");
+    const [showPasswords, setShowPasswords] = useState({});
 
-const [sharedCredentials, setSharedCredentials] = useState([]);
-    const navigate = useNavigate();
-
-   const handleChange = (e) => {
-
-    const { name, value } = e.target;
-
-    setCredential({
-        ...credential,
-        [name]: value
+    const [shareData, setShareData] = useState({
+        credentialId: "",
+        email: "",
+        permission: "READ"
     });
 
-    if (name === "password") {
+    const navigate = useNavigate();
 
-        let score = 0;
+    // ===============================
+    // INPUT CHANGE
+    // ===============================
 
-        if (value.length >= 8) score++;
-        if (/[A-Z]/.test(value)) score++;
-        if (/[a-z]/.test(value)) score++;
-        if (/[0-9]/.test(value)) score++;
-        if (/[@$!%*?&]/.test(value)) score++;
+    const handleChange = (e) => {
 
-        if (score <= 2)
-            setStrength("Weak");
-        else if (score <= 4)
-            setStrength("Medium");
-        else
-            setStrength("Strong");
-    }
-
-};
-
-    const handleLogout = () => {
-
-    localStorage.removeItem("token");
-
-    alert("Logged out successfully");
-
-    navigate("/login");
-
-};
-
-   const handleGeneratePassword = async () => {
-
-    try {
-
-        const response = await generatePassword(12);
+        const { name, value } = e.target;
 
         setCredential({
             ...credential,
-            password: response.data
+            [name]: value
         });
 
-        setStrength("Strong");
+        if (name === "password") {
 
-    } catch (error) {
+            let score = 0;
 
-        console.error(error);
+            if (value.length >= 8) score++;
+            if (/[A-Z]/.test(value)) score++;
+            if (/[a-z]/.test(value)) score++;
+            if (/[0-9]/.test(value)) score++;
+            if (/[@$!%*?&]/.test(value)) score++;
 
-        alert("Failed to generate password");
+            if (!value) {
+                setStrength("");
+            } else if (score <= 2) {
+                setStrength("Weak");
+            } else if (score <= 4) {
+                setStrength("Medium");
+            } else {
+                setStrength("Strong");
+            }
+        }
+    };
 
-    }
+    // ===============================
+    // PASSWORD STRENGTH
+    // ===============================
 
-};
+    const getStrengthClass = () => {
+
+        if (strength === "Strong") return "strength-strong";
+        if (strength === "Medium") return "strength-medium";
+        if (strength === "Weak") return "strength-weak";
+
+        return "";
+    };
+
+    // ===============================
+    // LOGOUT
+    // ===============================
+
+    const handleLogout = () => {
+
+        localStorage.removeItem("token");
+
+        navigate("/login");
+    };
+
+    // ===============================
+    // GENERATE PASSWORD
+    // ===============================
+
+    const handleGeneratePassword = async () => {
+
+        try {
+
+            const response = await generatePassword(12);
+
+            setCredential({
+                ...credential,
+                password: response.data
+            });
+
+            setStrength("Strong");
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert("Failed to generate password");
+        }
+    };
+
+    // ===============================
+    // LOAD DATA
+    // ===============================
+
+    const loadCredentials = async () => {
+
+        try {
+
+            const response = await getCredentials();
+
+            setCredentials(response.data);
+
+            const sharedResponse = await getSharedCredentials();
+
+            console.log("SHARED CREDENTIALS:", sharedResponse.data);
+
+            setSharedCredentials(sharedResponse.data);
+
+        } catch (error) {
+
+            console.error(error);
+        }
+    };
+
+    // ===============================
+    // DELETE
+    // ===============================
+
     const deleteCredential = async (id) => {
 
-    try {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this credential?"
+        );
 
-        await deleteCredentialById(id);
+        if (!confirmed) return;
 
-        alert("Credential deleted successfully");
+        try {
 
-        loadCredentials();
+            await deleteCredentialById(id);
 
-    } catch(error) {
+            alert("Credential deleted successfully");
 
-        console.error(error);
-        alert("Delete failed");
+            loadCredentials();
 
-    }
+        } catch (error) {
 
-};
+            console.error(error);
 
-const handleShare = async () => {
+            alert("Delete failed");
+        }
+    };
 
-    try {
+    // ===============================
+    // EDIT
+    // ===============================
 
-        await shareCredential(shareData);
+    const editCredential = (item) => {
 
-        alert("Credential Shared Successfully");
-
-        setShowShare(false);
-
-        setShareData({
-            credentialId: "",
-            email: "",
-            permission: "READ"
+        setCredential({
+            website: item.website || "",
+            url: item.url || "",
+            username: item.username || "",
+            password: item.password || "",
+            notes: item.notes || ""
         });
 
-    } catch (error) {
+        setIsEdit(true);
+        setEditId(item.id);
+        setShowForm(true);
 
-        console.error(error);
+        setStrength("Strong");
+    };
 
-        alert("Failed to share credential");
-
-    }
-
-};
+    // ===============================
+    // SUBMIT
+    // ===============================
 
     const handleSubmit = async (e) => {
 
-    e.preventDefault();
+        e.preventDefault();
 
-    try {
+        try {
 
-        if(isEdit){
+            if (isEdit) {
 
-    await updateCredential({
-        ...credential,
-        id: editId
-    });
+                await updateCredential({
+                    ...credential,
+                    id: editId
+                });
 
-    alert("Credential Updated Successfully");
+                alert("Credential updated successfully");
 
-}
-else{
+            } else {
 
-    await addCredential(credential);
+                await addCredential(credential);
 
-    alert("Credential Saved Successfully");
-
-}
-
-
-        setCredential({
-    website: "",
-    url: "",
-    username: "",
-    password: "",
-    notes: ""
-});
-   setStrength("");
-
-loadCredentials();
-    } catch (error) {
-
-        alert("Failed to Save Credential");
-        console.error(error);
-
-    }
-
-};
-
- const loadCredentials = async () => {
-
-    try {
-
-        const response = await getCredentials();
-
-        console.log("Credentials:", response.data);
-
-        setCredentials(response.data);
-
-        const sharedResponse = await getSharedCredentials();
-
-        setSharedCredentials(sharedResponse.data);
-
-    } catch (error) {
-
-        console.log(error.response);
-        console.log(error.response?.status);
-        console.log(error.response?.data);
-
-    }
-
-};
-
-const editCredential = (item) => {
-
-    setCredential(item);
-
-    setIsEdit(true);
-
-    setEditId(item.id);
-
-};
-
- useEffect(() => {
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-
-        alert("Please login first");
-
-        navigate("/login");
-
-        return;
-
-    }
-
-    loadCredentials();
-    setShowForm(false);
-    setIsEdit(false);
-    setEditId(null);
-
-}, []);
-
-
-    return (
-       <div className="container mt-5">
-    <div className="card shadow-lg p-4">
-
-            <div className="d-flex justify-content-between align-items-center mb-3">
-
-    <h2 className="dashboard-title">
-    🔐 Password Vault Dashboard
-</h2>
-
-    <button
-        className="btn btn-danger logout-btn"
-        onClick={handleLogout}
-    >
-        Logout
-    </button>
-
-</div>
-  
-  <div className="mb-4 text-center">
-    <button
-        className="btn btn-success"
-       onClick={() => {
-    setCredential({
-        website: "",
-        url: "",
-        username: "",
-        password: "",
-        notes: ""
-    });
-
-    setStrength("");
-
-    setIsEdit(false);
-    setEditId(null);
-    setShowForm(true);
-}}
-    >
-        + Add Credential
-    </button>
-</div>
-
-            {showForm && (
-<form onSubmit={handleSubmit}>
-
-                <div className="mb-3">
-                    <label>Website</label>
-                    <input
-                       type="text"
-                       name="website"
-                       className="form-control"
-                       value={credential.website}
-                       onChange={handleChange}
-                       placeholder="Enter website name"
-                     />
-                </div>
-
-                <div className="mb-3">
-                    <label>Website URL</label>
-                    <input
-                        type="text"
-                        name="url"
-                        className="form-control"
-                        value={credential.url}
-                        onChange={handleChange}
-                        placeholder="Enter website URL"
-                    />
-                </div>
-
-                <div className="mb-3">
-                    <label>Username</label>
-                    <input
-                       type="text"
-                       name="username"
-                       className="form-control"
-                       value={credential.username}
-                       onChange={handleChange}
-                       placeholder="Enter username"
-                    />
-                </div>
-
-               <div className="mb-3">
-    <label>Password</label>
-
-    <div className="d-flex gap-2">
-
-        <input
-            type="text"
-            name="password"
-            className="form-control"
-            value={credential.password}
-            onChange={handleChange}
-            placeholder="Enter password"
-        />
-
-        <button
-            type="button"
-            className="btn btn-success"
-            onClick={handleGeneratePassword}
-        >
-            Generate
-        </button>
-
-    </div>
-
-    <div className="mt-2">
-
-        <strong>Password Strength : </strong>
-
-        <span
-            style={{
-                color:
-                    strength === "Strong"
-                        ? "green"
-                        : strength === "Medium"
-                        ? "orange"
-                        : "red"
-            }}
-        >
-            {strength}
-        </span>
-
-    </div>
-
-</div>
-
-        
-
-                <div className="mb-3">
-                    <label>Notes</label>
-                    <textarea
-                      name="notes"
-                      className="form-control"
-                      value={credential.notes}
-                      onChange={handleChange}
-                      placeholder="Enter any notes"
-                    />
-                </div>
-
-                <div className="d-flex gap-2">
-
-<button className="btn btn-primary w-100">
-    {isEdit ? "Update Credential" : "Save Credential"}
-</button>
-
-<button
-    type="button"
-    className="btn btn-secondary w-100"
-    onClick={() => {
-    setShowForm(false);
-
-    setCredential({
-        website: "",
-        url: "",
-        username: "",
-        password: "",
-        notes: ""
-    });
-
-    setStrength("");
-
-    setIsEdit(false);
-    setEditId(null);
-}}
->
-    Cancel
-</button>
-
-</div>
-
-            </form>
-            )}
-
-{showShare && (
-
-<div className="card p-3 mt-4 mb-4 border">
-
-    <h4>Share Credential</h4>
-
-    <div className="mb-3">
-
-        <label>User Email</label>
-
-        <input
-            type="email"
-            className="form-control"
-            value={shareData.email}
-            onChange={(e) =>
-                setShareData({
-                    ...shareData,
-                    email: e.target.value
-                })
+                alert("Credential saved successfully");
             }
-        />
 
-    </div>
+            resetForm();
 
-    <div className="mb-3">
+            loadCredentials();
 
-        <label>Permission</label>
+        } catch (error) {
 
-        <select
-            className="form-control"
-            value={shareData.permission}
-            onChange={(e) =>
-                setShareData({
-                    ...shareData,
-                    permission: e.target.value
-                })
-            }
-        >
+            console.error(error);
 
-            <option value="READ">READ</option>
-            <option value="WRITE">WRITE</option>
+            alert("Failed to save credential");
+        }
+    };
 
-        </select>
+    // ===============================
+    // RESET FORM
+    // ===============================
 
-    </div>
+    const resetForm = () => {
 
-    <div className="d-flex gap-2">
+        setCredential(emptyCredential);
 
-        <button
-            className="btn btn-primary"
-            onClick={handleShare}
-        >
-            Share
-        </button>
+        setStrength("");
 
-        <button
-            className="btn btn-secondary"
-            onClick={() => setShowShare(false)}
-        >
-            Cancel
-        </button>
+        setIsEdit(false);
 
-    </div>
+        setEditId(null);
 
-</div>
+        setShowForm(false);
+    };
 
-)}
+    // ===============================
+    // SHARE
+    // ===============================
 
-<hr className="my-5" />
-
-<h3>Saved Credentials</h3>
-
-<table className="table table-hover table-bordered mt-3">
-
-    <thead>
-
-        <tr>
-
-            <th>ID</th>
-            <th>Website</th>
-            <th>URL</th>
-            <th>Username</th>
-            <th>Password</th>
-            <th>Notes</th>
-            <th>Actions</th>
-
-        </tr>
-
-    </thead>
-
-    <tbody>
-
-        {credentials.map((item) => (
-
-            <tr key={item.id}>
-
-                <td>{item.id}</td>
-                <td>{item.website}</td>
-                <td>{item.url}</td>
-                <td>{item.username}</td>
-                <td>{item.password}</td>
-                <td>{item.notes}</td>
-
-<td>
-    <button
-        className="btn btn-warning btn-sm me-2"
-        onClick={() => editCredential(item)}
-    >
-        Edit
-    </button>
-    <button
-    className="btn btn-danger btn-sm"
-    onClick={() => deleteCredential(item.id)}
->
-    Delete
-</button>
-<button
-    className="btn btn-info btn-sm ms-2"
-    onClick={() => {
+    const openShare = (id) => {
 
         setShareData({
-            credentialId: item.id,
+            credentialId: id,
             email: "",
             permission: "READ"
         });
 
         setShowShare(true);
+    };
 
-    }}
->
-    Share
-</button>
-</td>
+    const handleShare = async () => {
 
-            </tr>
+        if (!shareData.email) {
 
-        ))}
+            alert("Please enter user email");
 
-    </tbody>
+            return;
+        }
 
-</table>
+        try {
 
- <hr className="my-5" />
+            await shareCredential(shareData);
 
-<h3>Shared With Me</h3>
+            alert("Credential shared successfully");
 
-<table className="table table-bordered table-hover">
+            setShowShare(false);
 
-    <thead>
+            setShareData({
+                credentialId: "",
+                email: "",
+                permission: "READ"
+            });
 
-    <tr>
+        } catch (error) {
 
-        <th>ID</th>
-        <th>Website</th>
-        <th>Username</th>
-        <th>Permission</th>
+            console.error(error);
 
-    </tr>
+            alert("Failed to share credential");
+        }
+    };
 
-    </thead>
+    // ===============================
+    // PASSWORD VISIBILITY
+    // ===============================
 
-    <tbody>
+    const togglePassword = (id) => {
 
-    {sharedCredentials.map((item) => (
+        setShowPasswords({
+            ...showPasswords,
+            [id]: !showPasswords[id]
+        });
+    };
 
-        <tr key={item.id}>
+    // ===============================
+    // FILTER
+    // ===============================
 
-            <td>{item.id}</td>
+    const filteredCredentials = credentials.filter((item) => {
 
-            <td>{item.credential.website}</td>
+    const search = searchTerm.toLowerCase();
 
-            <td>{item.credential.username}</td>
+    return (
+        item.website?.toLowerCase().includes(search) ||
+        item.username?.toLowerCase().includes(search) ||
+        item.url?.toLowerCase().includes(search)
+    );
 
-            <td>
+});
+
+    
+    // ===============================
+    // INITIAL LOAD
+    // ===============================
+
+    useEffect(() => {
+
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+
+            navigate("/login");
+
+            return;
+        }
+
+        loadCredentials();
+
+    }, []);
+
+    return (
+
+        <div className="dashboard-layout">
+
+            {/* ================= SIDEBAR ================= */}
+
+            <aside className="sidebar">
+
+                <div className="brand">
+
+                    <div className="brand-icon">
+                        🔐
+                    </div>
+
+                    <div>
+                        <h2>PasswordVault</h2>
+                        <span>Secure Manager</span>
+                    </div>
+
+                </div>
+
+                <nav className="sidebar-nav">
+
+                    <div className="nav-item active">
+                        <span>▦</span>
+                        Dashboard
+                    </div>
+
+                    <div
+                        className="nav-item"
+                        onClick={() =>
+                            document
+                                .getElementById("credentials-section")
+                                ?.scrollIntoView({ behavior: "smooth" })
+                        }
+                    >
+                        <span>🔑</span>
+                        My Credentials
+                    </div>
+
+                    <div
+                        className="nav-item"
+                        onClick={() =>
+                            document
+                                .getElementById("shared-section")
+                                ?.scrollIntoView({ behavior: "smooth" })
+                        }
+                    >
+                        <span>🤝</span>
+                        Shared With Me
+                    </div>
+
+                </nav>
+
+                <div className="sidebar-bottom">
+
+                    <div className="security-box">
+
+                        <div className="security-icon">
+                            🛡️
+                        </div>
+
+                        <div>
+                            <strong>Vault Protected</strong>
+                            <small>Your credentials are secure</small>
+                        </div>
+
+                    </div>
+
+                    <button
+                        className="sidebar-logout"
+                        onClick={handleLogout}
+                    >
+                        ↪ Logout
+                    </button>
+
+                </div>
+
+            </aside>
+
+
+            {/* ================= MAIN ================= */}
+
+            <main className="main-content">
+
+                {/* HEADER */}
+
+                <header className="top-header">
+
+                    <div>
+
+                        <h1>Dashboard</h1>
+
+                        <p>
+                            Manage your credentials securely in one place.
+                        </p>
+
+                    </div>
+
+                    <div className="user-profile">
+
+                        <div className="avatar">
+                            S
+                        </div>
+
+                        <div>
+                            <strong>User</strong>
+                            <small>Secure Account</small>
+                        </div>
+
+                    </div>
+
+                </header>
+
+
+                {/* ================= STATISTICS ================= */}
+
+                <section className="stats-grid">
+
+                    <div className="stat-card">
+
+                        <div className="stat-icon blue">
+                            🔐
+                        </div>
+
+                        <div>
+                            <span>Total Credentials</span>
+                            <strong>{credentials.length}</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div className="stat-card">
+
+                        <div className="stat-icon purple">
+                            🤝
+                        </div>
+
+                        <div>
+                            <span>Shared Credentials</span>
+                            <strong>{sharedCredentials.length}</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div className="stat-card">
+
+                        <div className="stat-icon green">
+                            🛡️
+                        </div>
+
+                        <div>
+                            <span>Security Status</span>
+                            <strong className="secure-text">
+                                Protected
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div className="stat-card">
+
+                        <div className="stat-icon orange">
+                            🔑
+                        </div>
+
+                        <div>
+                            <span>Password Manager</span>
+                            <strong>Active</strong>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                {/* ================= CREDENTIAL SECTION ================= */}
+
+                <section
+                    className="content-card"
+                    id="credentials-section"
+                >
+
+                    <div className="section-header">
+
+                        <div>
+
+                            <h2>My Credentials</h2>
+
+                            <p>
+                                Securely manage your saved login credentials.
+                            </p>
+
+                        </div>
+
+                        <button
+                            className="add-btn"
+                            onClick={() => {
+
+                                resetForm();
+
+                                setShowForm(true);
+
+                            }}
+                        >
+                            + Add Credential
+                        </button>
+
+                    </div>
+
+
+                    {/* SEARCH */}
+
+                    <div className="search-container">
+
+    <span>🔍</span>
+
+    <input
+        type="text"
+        placeholder="Search by website, username or URL..."
+        value={searchTerm}
+        onChange={(e) =>
+            setSearchTerm(e.target.value)
+        }
+    />
+
+</div>
+
+
+                    {/* TABLE */}
+
+                    <div className="table-wrapper">
+
+                        <table className="credentials-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Website</th>
+                                    <th>Username</th>
+                                    <th>Password</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {filteredCredentials.length === 0 ? (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan="5"
+                                            className="empty-state"
+                                        >
+                                            🔐 No credentials found
+                                        </td>
+
+                                    </tr>
+
+                                ) : (
+
+                                    filteredCredentials.map((item) => (
+
+                                        <tr key={item.id}>
+
+                                            <td>
+
+                                                <div className="website-cell">
+
+                                                    <div className="website-icon">
+                                                        🌐
+                                                    </div>
+
+                                                    <div>
+
+                                                        <strong>
+                                                            {item.website}
+                                                        </strong>
+
+                                                        <small>
+                                                            {item.url}
+                                                        </small>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </td>
+
+
+                                            <td>
+                                                {item.username}
+                                            </td>
+
+
+                                            <td>
+
+                                                <div className="password-cell">
+
+                                                    <span>
+                                                        {showPasswords[item.id]
+                                                            ? item.password
+                                                            : "••••••••"
+                                                        }
+                                                    </span>
+
+                                                    <button
+                                                        className="eye-btn"
+                                                        onClick={() =>
+                                                            togglePassword(item.id)
+                                                        }
+                                                    >
+                                                        {showPasswords[item.id]
+                                                            ? "🙈"
+                                                            : "👁️"
+                                                        }
+                                                    </button>
+
+                                                </div>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <span className="notes-text">
+                                                    {item.notes || "—"}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <div className="action-buttons">
+
+                                                    <button
+                                                        className="action edit"
+                                                        onClick={() =>
+                                                            editCredential(item)
+                                                        }
+                                                    >
+                                                        ✏
+                                                    </button>
+
+                                                    <button
+                                                        className="action delete"
+                                                        onClick={() =>
+                                                            deleteCredential(item.id)
+                                                        }
+                                                    >
+                                                        🗑
+                                                    </button>
+
+                                                    <button
+                                                        className="action share"
+                                                        onClick={() =>
+                                                            openShare(item.id)
+                                                        }
+                                                    >
+                                                        ↗
+                                                    </button>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+
+                {/* ================= SHARED ================= */}
+
+                <section
+                    className="content-card"
+                    id="shared-section"
+                >
+
+                    <div className="section-header">
+
+                        <div>
+
+                            <h2>Shared With Me</h2>
+
+                            <p>
+                                Credentials shared with your account.
+                            </p>
+
+                        </div>
+
+                        <div className="shared-count">
+                            {sharedCredentials.length} Shared
+                        </div>
+
+                    </div>
+
+
+                    <div className="table-wrapper">
+
+                        <table className="credentials-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Website</th>
+                                    <th>Username</th>
+                                    <th>Permission</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {sharedCredentials.length === 0 ? (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan="3"
+                                            className="empty-state"
+                                        >
+                                            🤝 No credentials have been shared with you.
+                                        </td>
+
+                                    </tr>
+
+                                ) : (
+
+                                    sharedCredentials.map((item) => (
+
+                                        <tr key={item.id}>
+
+                                            <td>
+
+                                                <div className="website-cell">
+
+                                                    <div className="website-icon">
+                                                        🌐
+                                                    </div>
+
+                                                    <strong>
+                                                        {item.credential?.website}
+                                                    </strong>
+
+                                                </div>
+
+                                            </td>
+
+                                            <td>
+                                                {item.credential?.username}
+                                            </td>
+
+                                            <td>
     <span
         className={
             item.permission === "WRITE"
-                ? "badge bg-success"
-                : "badge bg-warning text-dark"
+                ? "permission write"
+                : item.permission === "FULL_MANAGEMENT"
+                    ? "permission full-management"
+                    : "permission read"
         }
     >
-        {item.permission}
+        {item.permission === "FULL_MANAGEMENT"
+            ? "FULL MANAGEMENT"
+            : item.permission}
     </span>
 </td>
-        </tr>
+                                        </tr>
 
-    ))}
+                                    ))
 
-    </tbody>
+                                )}
 
-</table>
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+
+                {/* ================= FOOTER ================= */}
+
+                <footer className="dashboard-footer">
+
+                    <span>
+                        🔐 PasswordVault
+                    </span>
+
+                    <span>
+                        Secure Credential Management System
+                    </span>
+
+                </footer>
+
+            </main>
+
+
+            {/* ================= ADD / EDIT MODAL ================= */}
+
+            {showForm && (
+
+                <div className="modal-overlay">
+
+                    <div className="modal-box">
+
+                        <div className="modal-header">
+
+                            <div>
+
+                                <h2>
+                                    {isEdit
+                                        ? "Edit Credential"
+                                        : "Add New Credential"
+                                    }
+                                </h2>
+
+                                <p>
+                                    Store your login information securely.
+                                </p>
+
+                            </div>
+
+                            <button
+                                className="modal-close"
+                                onClick={resetForm}
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+
+                        <form onSubmit={handleSubmit}>
+
+                            <div className="form-group">
+
+                                <label>Website Name</label>
+
+                                <input
+                                    type="text"
+                                    name="website"
+                                    value={credential.website}
+                                    onChange={handleChange}
+                                    placeholder="e.g. Google"
+                                    required
+                                />
+
+                            </div>
+
+
+                            <div className="form-group">
+
+                                <label>Website URL</label>
+
+                                <input
+                                    type="url"
+                                    name="url"
+                                    value={credential.url}
+                                    onChange={handleChange}
+                                    placeholder="https://example.com"
+                                />
+
+                            </div>
+
+
+                            <div className="form-group">
+
+                                <label>Username / Email</label>
+
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={credential.username}
+                                    onChange={handleChange}
+                                    placeholder="Enter username or email"
+                                    required
+                                />
+
+                            </div>
+
+
+                            <div className="form-group">
+
+                                <label>Password</label>
+
+                                <div className="password-input-group">
+
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        value={credential.password}
+                                        onChange={handleChange}
+                                        placeholder="Enter secure password"
+                                        required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        className="generate-btn"
+                                        onClick={handleGeneratePassword}
+                                    >
+                                        ✨ Generate
+                                    </button>
+
+                                </div>
+
+
+                                {strength && (
+
+                                    <div className="strength-container">
+
+                                        <div className="strength-header">
+
+                                            <span>
+                                                Password Strength
+                                            </span>
+
+                                            <strong
+                                                className={getStrengthClass()}
+                                            >
+                                                {strength}
+                                            </strong>
+
+                                        </div>
+
+                                        <div className="strength-bar">
+
+                                            <div
+                                                className={`strength-fill ${getStrengthClass()}`}
+                                            ></div>
+
+                                        </div>
+
+                                    </div>
+
+                                )}
+
+                            </div>
+
+
+                            <div className="form-group">
+
+                                <label>Notes</label>
+
+                                <textarea
+                                    name="notes"
+                                    value={credential.notes}
+                                    onChange={handleChange}
+                                    placeholder="Add any additional notes..."
+                                    rows="3"
+                                />
+
+                            </div>
+
+
+                            <div className="modal-actions">
+
+                                <button
+                                    type="button"
+                                    className="cancel-btn"
+                                    onClick={resetForm}
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="save-btn"
+                                >
+                                    {isEdit
+                                        ? "Update Credential"
+                                        : "Save Credential"
+                                    }
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* ================= SHARE MODAL ================= */}
+
+            {showShare && (
+
+                <div className="modal-overlay">
+
+                    <div className="modal-box share-modal">
+
+                        <div className="modal-header">
+
+                            <div>
+
+                                <h2>Share Credential</h2>
+
+                                <p>
+                                    Give another user secure access.
+                                </p>
+
+                            </div>
+
+                            <button
+                                className="modal-close"
+                                onClick={() => setShowShare(false)}
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+
+                        <div className="form-group">
+
+                            <label>User Email</label>
+
+                            <input
+                                type="email"
+                                value={shareData.email}
+                                onChange={(e) =>
+                                    setShareData({
+                                        ...shareData,
+                                        email: e.target.value
+                                    })
+                                }
+                                placeholder="Enter recipient email"
+                            />
+
+                        </div>
+
+
+                        <div className="form-group">
+
+                            <label>Permission</label>
+
+                            <select
+                                value={shareData.permission}
+                                onChange={(e) =>
+                                    setShareData({
+                                        ...shareData,
+                                        permission: e.target.value
+                                    })
+                                }
+                            >
+
+                                <option value="READ">
+                                    READ - View Credential
+                                </option>
+
+                                <option value="WRITE">
+                                    WRITE - Edit Credential
+                                </option>
+
+                               <option value="FULL_MANAGEMENT">
+                                    FULL MANAGEMENT - Full Access
+                               </option>
+                            </select>
+
+                        </div>
+
+
+                        <div className="modal-actions">
+
+                            <button
+                                className="cancel-btn"
+                                onClick={() => setShowShare(false)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="save-btn"
+                                onClick={handleShare}
+                            >
+                                🤝 Share Credential
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
         </div>
-        </div>
-        
     );
 }
 
