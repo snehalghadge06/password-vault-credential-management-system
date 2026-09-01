@@ -15,169 +15,12 @@ body {
 
 
 /* ================================
-   DASHBOARD LAYOUT
-================================ */
-
-.dashboard-layout {
-    min-height: 100vh;
-    display: flex;
-    background: #f5f7fb;
-}
-
-
-/* ================================
-   SIDEBAR
-================================ */
-
-.sidebar {
-    width: 250px;
-    min-height: 100vh;
-    background: #111827;
-    color: white;
-    padding: 25px 18px;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 10;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 10px 30px;
-    border-bottom: 1px solid #273244;
-}
-
-.brand-icon {
-    width: 42px;
-    height: 42px;
-    background: #2563eb;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-}
-
-.brand h2 {
-    color: white;
-    font-size: 17px;
-    margin: 0;
-    font-weight: 700;
-}
-
-.brand span {
-    color: #94a3b8;
-    font-size: 11px;
-}
-
-
-/* ================================
-   NAVIGATION
-================================ */
-
-.sidebar-nav {
-    margin-top: 25px;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 13px 15px;
-    margin-bottom: 7px;
-    border-radius: 9px;
-    color: #aeb9ca;
-    font-size: 14px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.nav-item:hover {
-    background: #1e293b;
-    color: white;
-}
-
-.nav-item.active {
-    background: #2563eb;
-    color: white;
-}
-
-.nav-item span {
-    width: 20px;
-    text-align: center;
-}
-
-
-/* ================================
-   SIDEBAR BOTTOM
-================================ */
-
-.sidebar-bottom {
-    margin-top: auto;
-}
-
-.security-box {
-    background: #182333;
-    border: 1px solid #29374a;
-    padding: 13px;
-    border-radius: 10px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.security-icon {
-    width: 34px;
-    height: 34px;
-    background: #14532d;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.security-box strong {
-    display: block;
-    font-size: 11px;
-    color: #e2e8f0;
-}
-
-.security-box small {
-    color: #94a3b8;
-    font-size: 9px;
-}
-
-.sidebar-logout {
-    width: 100%;
-    padding: 11px;
-    border: none;
-    background: transparent;
-    color: #cbd5e1;
-    border-radius: 8px;
-    text-align: left;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.sidebar-logout:hover {
-    background: #7f1d1d;
-    color: white;
-}
-
-
-/* ================================
    MAIN CONTENT
 ================================ */
 
 .main-content {
-    margin-left: 250px;
-    width: calc(100% - 250px);
+    width: 100%;
+    min-width: 0;
     padding: 30px 40px;
 }
 
@@ -550,6 +393,11 @@ body {
     color: #166534;
 }
 
+.permission.full-management {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
 
 /* ================================
    EMPTY STATE
@@ -818,36 +666,7 @@ body {
 
 @media (max-width: 800px) {
 
-    .sidebar {
-        width: 70px;
-        padding: 20px 10px;
-    }
-
-    .brand div:not(.brand-icon),
-    .nav-item:not(.active),
-    .nav-item,
-    .security-box,
-    .sidebar-logout {
-        font-size: 0;
-    }
-
-    .brand {
-        justify-content: center;
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    .nav-item {
-        justify-content: center;
-    }
-
-    .nav-item span {
-        font-size: 18px;
-    }
-
     .main-content {
-        margin-left: 70px;
-        width: calc(100% - 70px);
         padding: 20px;
     }
 
@@ -894,4 +713,27 @@ body {
         gap: 5px;
     }
 
+}
+
+/* =========================================================
+   DASHBOARD INSIDE COMMON DASHBOARD LAYOUT
+   Hide duplicate sidebar from Dashboard.jsx
+========================================================= */
+
+.dashboard-layout .dashboard-layout {
+    display: block;
+    width: 100%;
+    min-height: auto;
+    background: transparent;
+}
+
+.dashboard-layout .dashboard-layout > .sidebar {
+    display: none;
+}
+
+.dashboard-layout .dashboard-layout > .main-content {
+    margin-left: 0;
+    width: 100%;
+    min-height: auto;
+    padding: 0;
 }

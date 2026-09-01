@@ -10,6 +10,10 @@ import com.passwordvault.backend.dto.LoginRequest;
 import java.util.Optional;
 import com.passwordvault.backend.security.JwtUtil;
 import com.passwordvault.backend.dto.ProfileRequest;
+import com.passwordvault.backend.entity.LoginActivity;
+import com.passwordvault.backend.repository.LoginActivityRepository;
+import java.time.LocalDateTime;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class UserService {
@@ -22,6 +26,12 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private LoginActivityRepository loginActivityRepository;
+
+    @Autowired
+    private SecurityMonitoringService securityMonitoringService;
 
     public String registerUser(RegisterRequest request) {
 
@@ -40,31 +50,64 @@ public class UserService {
         return "User Registered Successfully";
     }
 
-    public String loginUser(LoginRequest request) {
+    public String loginUser(
+            LoginRequest request,
+            HttpServletRequest httpRequest) {
 
         Optional<User> userOptional =
                 userRepository.findByEmail(request.getEmail());
 
+        // Case 1: Email not found
         if (userOptional.isEmpty()) {
+
+            LoginActivity activity = new LoginActivity();
+
+            activity.setEmail(request.getEmail());
+            activity.setLoginTime(LocalDateTime.now());
+            activity.setStatus("FAILED");
+            activity.setFailureReason("Invalid Email");
+            activity.setIpAddress(httpRequest.getRemoteAddr());
+            activity.setUserAgent(httpRequest.getHeader("User-Agent"));
+
+            loginActivityRepository.save(activity);
+
+            securityMonitoringService.analyzeLoginActivity(activity);
+
             return "Invalid Email";
         }
 
         User user = userOptional.get();
 
-        System.out.println("LOGIN EMAIL = " + request.getEmail());
-        System.out.println("DB EMAIL = " + user.getEmail());
-        System.out.println("PASSWORD MATCH = " +
-                passwordEncoder.matches(
-                        request.getPassword(),
-                        user.getPassword()
-                ));
-
+        // Case 2: Wrong password
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
 
+            LoginActivity activity = new LoginActivity();
+
+            activity.setEmail(request.getEmail());
+            activity.setLoginTime(LocalDateTime.now());
+            activity.setStatus("FAILED");
+            activity.setFailureReason("Invalid Password");
+            activity.setIpAddress(httpRequest.getRemoteAddr());
+            activity.setUserAgent(httpRequest.getHeader("User-Agent"));
+
+            loginActivityRepository.save(activity);
+
+            securityMonitoringService.analyzeLoginActivity(activity);
+
             return "Invalid Password";
         }
+
+        // Case 3: Successful login
+        LoginActivity activity = new LoginActivity();
+        activity.setEmail(request.getEmail());
+        activity.setLoginTime(LocalDateTime.now());
+        activity.setStatus("SUCCESS");
+        activity.setIpAddress(httpRequest.getRemoteAddr());
+        activity.setUserAgent(httpRequest.getHeader("User-Agent"));
+
+        loginActivityRepository.save(activity);
 
         return jwtUtil.generateToken(user.getEmail());
     }

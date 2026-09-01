@@ -1,0 +1,466 @@
+/* =========================================================
+   DASHBOARD LAYOUT
+========================================================= */
+
+.dashboard-layout {
+    min-height: 100vh;
+
+    display: flex;
+
+    width: 100%;
+
+    background: #f5f7fb;
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.dashboard-layout .sidebar {
+
+    width: 250px;
+    min-width: 250px;
+    min-height: 100vh;
+
+    background: #111827;
+
+    color: white;
+
+    padding: 25px 18px;
+
+    display: flex;
+    flex-direction: column;
+
+    position: fixed;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    z-index: 10;
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 8px 10px 30px;
+
+    border-bottom: 1px solid #273244;
+}
+
+.brand-icon {
+
+    width: 42px;
+    height: 42px;
+
+    background: #2563eb;
+
+    border-radius: 11px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 22px;
+
+    flex-shrink: 0;
+}
+
+.brand h2 {
+
+    color: white;
+
+    font-size: 17px;
+
+    margin: 0;
+
+    font-weight: 700;
+}
+
+.brand span {
+
+    color: #94a3b8;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+.sidebar-nav {
+
+    margin-top: 25px;
+}
+
+.nav-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 13px 15px;
+
+    margin-bottom: 7px;
+
+    border-radius: 9px;
+
+    color: #aeb9ca;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+
+    background: #1e293b;
+
+    color: white;
+}
+
+.nav-item.active {
+
+    background: #2563eb;
+
+    color: white;
+
+    box-shadow:
+        0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.nav-item span {
+
+    width: 20px;
+
+    text-align: center;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+.security-menu {
+
+    width: 100%;
+}
+
+.security-nav-item {
+
+    cursor: default;
+}
+
+.security-active {
+
+    background: #1e293b;
+
+    color: white;
+}
+
+.security-title {
+
+    flex: 1;
+
+    text-align: left !important;
+
+    width: auto !important;
+}
+
+.security-arrow {
+
+    width: auto !important;
+
+    margin-left: auto;
+
+    font-size: 10px;
+
+    color: #94a3b8;
+}
+
+
+/* =========================================================
+   SECURITY SUBMENU
+========================================================= */
+
+.security-submenu {
+
+    margin-left: 20px;
+
+    padding-left: 10px;
+
+    border-left: 1px solid #374151;
+
+    margin-bottom: 10px;
+}
+
+.security-subitem {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 10px 12px;
+
+    font-size: 12px;
+
+    color: #aeb9ca;
+
+    cursor: pointer;
+
+    border-radius: 7px;
+
+    transition: all 0.2s ease;
+}
+
+.security-subitem span {
+
+    width: 18px;
+
+    text-align: center;
+}
+
+.security-subitem:hover {
+
+    background: #1e293b;
+
+    color: white;
+}
+
+.security-subitem-active {
+
+    background: #1d4ed8;
+
+    color: white;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   SIDEBAR BOTTOM
+========================================================= */
+
+.sidebar-bottom {
+
+    margin-top: auto;
+
+    padding-top: 20px;
+}
+
+.security-box {
+
+    background: #182333;
+
+    border: 1px solid #29374a;
+
+    padding: 13px;
+
+    border-radius: 10px;
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+.security-icon {
+
+    width: 34px;
+    height: 34px;
+
+    background: #14532d;
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+.security-box strong {
+
+    display: block;
+
+    font-size: 11px;
+
+    color: #e2e8f0;
+}
+
+.security-box small {
+
+    color: #94a3b8;
+
+    font-size: 9px;
+
+    display: block;
+
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+.sidebar-logout {
+
+    width: 100%;
+
+    padding: 11px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #cbd5e1;
+
+    border-radius: 8px;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    transition: all 0.2s ease;
+}
+
+.sidebar-logout:hover {
+
+    background: #7f1d1d;
+
+    color: white;
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.dashboard-layout .main-content {
+
+    margin-left: 250px;
+
+    width: calc(100% - 250px);
+
+    min-width: 0;
+
+    min-height: 100vh;
+
+    padding: 30px 40px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 800px) {
+
+    .dashboard-layout .sidebar {
+
+        width: 70px;
+
+        min-width: 70px;
+
+        padding: 20px 10px;
+    }
+
+    .dashboard-layout .brand {
+
+        justify-content: center;
+
+        padding-left: 0;
+
+        padding-right: 0;
+    }
+
+    .dashboard-layout .brand div:not(.brand-icon) {
+
+        display: none;
+    }
+
+    .dashboard-layout .nav-item {
+
+        justify-content: center;
+
+        font-size: 0;
+    }
+
+    .dashboard-layout .nav-item span {
+
+        font-size: 18px;
+    }
+
+    .security-arrow {
+
+        display: none;
+    }
+
+    .dashboard-layout .security-box {
+
+        display: none;
+    }
+
+    .dashboard-layout .sidebar-logout {
+
+        font-size: 0;
+
+        text-align: center;
+    }
+
+    .dashboard-layout .main-content {
+
+        margin-left: 70px;
+
+        width: calc(100% - 70px);
+
+        padding: 20px;
+    }
+
+    .security-submenu {
+
+        display: none;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .dashboard-layout .main-content {
+
+        padding: 15px;
+    }
+}

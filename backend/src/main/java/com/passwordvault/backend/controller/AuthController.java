@@ -11,6 +11,7 @@ import com.passwordvault.backend.dto.ResetPasswordRequest;
 import com.passwordvault.backend.dto.ProfileRequest;
 import org.springframework.security.core.Authentication;
 import com.passwordvault.backend.entity.User;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,8 +27,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
-        return userService.loginUser(request);
+    public String login(
+            @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
+
+        return userService.loginUser(request, httpRequest);
     }
 
     @PostMapping("/forgot-password")
