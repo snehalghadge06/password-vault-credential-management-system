@@ -12,6 +12,7 @@ import com.passwordvault.backend.dto.ProfileRequest;
 import org.springframework.security.core.Authentication;
 import com.passwordvault.backend.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,7 +23,7 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest request) {
+    public String register(@Valid @RequestBody RegisterRequest request) {
         return userService.registerUser(request);
     }
 

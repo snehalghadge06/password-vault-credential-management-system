@@ -34,13 +34,40 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/password/**").permitAll()
-                        .requestMatchers("/api/security/**").authenticated()
+
+                        // Public APIs
+                        .requestMatchers(
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/api/password/**"
+                        ).permitAll()
+
+                        // Protected APIs
+                        .requestMatchers(
+                                "/api/auth/profile",
+                                "/api/security/**"
+                        ).authenticated()
+
+                        // Error endpoint
+                        .requestMatchers("/error").permitAll()
+
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(
+                                new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                                        org.springframework.http.HttpStatus.UNAUTHORIZED
+                                )
+                        )
+                )
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
-}
+    }

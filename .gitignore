@@ -1,5 +1,14 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-# Editor-based HTTP Client requests
-/httpRequests/
+# IntelliJ
+.idea/
+*.iml
+
+# Environment and secrets
+.env
+*.env
+
+# Build files
+backend/target/
+frontend/node_modules/
+
+# Logs
+*.log
