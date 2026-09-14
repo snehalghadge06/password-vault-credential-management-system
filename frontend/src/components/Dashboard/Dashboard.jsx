@@ -383,7 +383,7 @@ function Dashboard() {
 
         loadCredentials();
 
-    }, []);
+    }, [navigate]);
 
     // ===============================
     // RETURN

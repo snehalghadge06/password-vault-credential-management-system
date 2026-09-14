@@ -25,7 +25,7 @@ function Profile() {
 
     loadProfile();
 
-}, []);
+}, [navigate]);
 
 const loadProfile = async () => {
 
