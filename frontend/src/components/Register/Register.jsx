@@ -29,7 +29,7 @@ function Register() {
         try {
 
             const response = await axios.post(
-                "http://localhost:8081/api/auth/register",
+                "https://securevault-backend-lo1o.onrender.com/api/auth/register",
                 user
             );
 

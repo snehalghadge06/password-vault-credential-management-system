@@ -16,7 +16,7 @@ function SuspiciousActivity() {
                 const token = localStorage.getItem("token");
 
                 const response = await axios.get(
-                    "http://localhost:8081/api/security/suspicious-activity",
+                    "https://securevault-backend-lo1o.onrender.com/api/security/suspicious-activity",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`

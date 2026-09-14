@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8081/api/vault";
+const API_URL = "https://securevault-backend-lo1o.onrender.com/api/vault";
 
 const getToken = () => {
     return localStorage.getItem("token");
@@ -40,7 +40,7 @@ export const deleteCredentialById = (id) => {
 
 export const generatePassword = (length) => {
     return axios.get(
-        `http://localhost:8081/api/password/generate?length=${length}`,
+        `https://securevault-backend-lo1o.onrender.com/api/password/generate?length=${length}`,
         {
             headers: {
                 Authorization: `Bearer ${getToken()}`

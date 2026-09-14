@@ -24,12 +24,12 @@ function Reports() {
                 };
 
                 const passwordResponse = await axios.get(
-                    "http://localhost:8081/api/security/reports/password-health",
+                    "https://securevault-backend-lo1o.onrender.com/api/security/reports/password-health",
                     config
                 );
 
                 const loginResponse = await axios.get(
-                    "http://localhost:8081/api/security/login-activity",
+                    "https://securevault-backend-lo1o.onrender.com/api/security/login-activity",
                     config
                 );
 

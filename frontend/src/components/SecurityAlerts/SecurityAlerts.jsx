@@ -16,7 +16,7 @@ function SecurityAlerts() {
                 const token = localStorage.getItem("token");
 
                 const response = await axios.get(
-                    "http://localhost:8081/api/security/alerts",
+                    "https://securevault-backend-lo1o.onrender.com/api/security/alerts",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`

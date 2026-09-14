@@ -16,7 +16,7 @@ function SecurityAnalytics() {
                 const token = localStorage.getItem("token");
 
                 const response = await axios.get(
-                    "http://localhost:8081/api/security/analytics",
+                    "https://securevault-backend-lo1o.onrender.com/api/security/analytics",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`

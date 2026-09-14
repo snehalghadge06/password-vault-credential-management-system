@@ -16,7 +16,7 @@ function LoginActivity() {
                 const token = localStorage.getItem("token");
 
                 const response = await axios.get(
-                    "http://localhost:8081/api/security/login-activity",
+                    "https://securevault-backend-lo1o.onrender.com/api/security/login-activity",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
