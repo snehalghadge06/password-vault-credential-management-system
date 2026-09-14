@@ -9,6 +9,7 @@ import com.passwordvault.backend.util.AESUtil;
 import com.passwordvault.backend.util.PasswordStrengthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.passwordvault.backend.repository.NotificationRepository;
 
 import java.util.List;
 
@@ -20,6 +21,12 @@ public class PasswordHealthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     public PasswordHealthResponse getPasswordHealth(String email) {
 
@@ -60,6 +67,29 @@ public class PasswordHealthService {
                 } else {
 
                     weak++;
+
+                    String notificationMessage =
+                            "Your password for "
+                                    + credential.getWebsite()
+                                    + " is weak. Please update it to maintain account security.";
+
+                    boolean alreadyNotified =
+                            notificationRepository
+                                    .existsByUserIdAndTypeAndMessage(
+                                            user.getId(),
+                                            "PASSWORD_HEALTH",
+                                            notificationMessage
+                                    );
+
+                    if (!alreadyNotified) {
+
+                        notificationService.createNotification(
+                                user.getId(),
+                                "PASSWORD_HEALTH",
+                                "Weak Password Alert",
+                                notificationMessage
+                        );
+                    }
                 }
 
             } catch (Exception e) {

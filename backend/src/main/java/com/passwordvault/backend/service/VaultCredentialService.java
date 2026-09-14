@@ -25,6 +25,9 @@ public class VaultCredentialService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
 
     // ===============================
     // SAVE CREDENTIAL
@@ -112,6 +115,15 @@ public class VaultCredentialService {
         sharedCredential.setPermission(request.getPermission());
 
         sharedRepository.save(sharedCredential);
+
+        notificationService.createNotification(
+                sharedUser.getId(),
+                "CREDENTIAL_SHARED",
+                "Credential Shared With You",
+                "A credential has been securely shared with you by "
+                        + user.getFirstName()
+                        + "."
+        );
     }
 
 

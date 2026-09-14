@@ -12,6 +12,7 @@ import {
     shareCredential,
     getSharedCredentials
 } from "../../services/VaultService";
+import NotificationBell from "../Notifications/NotificationBell";
 
 function Dashboard() {
 
@@ -644,6 +645,8 @@ function Dashboard() {
                             </div>
 
 
+                            <NotificationBell />
+                            
                             <div className="user-profile">
 
                                 <div className="avatar">

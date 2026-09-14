@@ -10,6 +10,8 @@ import com.passwordvault.backend.repository.SecurityAlertRepository;
 import com.passwordvault.backend.repository.SuspiciousActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.passwordvault.backend.entity.User;
+import com.passwordvault.backend.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +32,12 @@ public class SecurityMonitoringService {
 
     @Autowired
     private AuditLogRepository auditLogRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
 
     public void analyzeLoginActivity(LoginActivity activity) {
@@ -80,6 +88,11 @@ public class SecurityMonitoringService {
             );
 
             createAuditLog(
+                    activity,
+                    (int) failedAttempts
+            );
+
+            createSecurityNotification(
                     activity,
                     (int) failedAttempts
             );
@@ -181,5 +194,25 @@ public class SecurityMonitoringService {
         );
 
         auditLogRepository.save(auditLog);
+    }
+
+    private void createSecurityNotification(
+            LoginActivity activity,
+            int failedAttempts) {
+
+        User user = userRepository
+                .findByEmail(activity.getEmail())
+                .orElse(null);
+
+        if (user == null) {
+            return;
+        }
+
+        notificationService.createNotification(
+                user.getId(),
+                "SECURITY_ALERT",
+                "Multiple Failed Login Attempts",
+                "Multiple failed login attempts were detected on your SecureVault account. Please verify your account."
+        );
     }
 }

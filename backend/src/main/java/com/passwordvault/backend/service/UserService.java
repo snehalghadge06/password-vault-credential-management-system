@@ -33,6 +33,9 @@ public class UserService {
     @Autowired
     private SecurityMonitoringService securityMonitoringService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public String registerUser(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -108,6 +111,14 @@ public class UserService {
         activity.setUserAgent(httpRequest.getHeader("User-Agent"));
 
         loginActivityRepository.save(activity);
+
+        notificationService.createNotification(
+                user.getId(),
+                "LOGIN",
+                "New Login Detected",
+                "A successful login was detected on your SecureVault account."
+        );
+
 
         return jwtUtil.generateToken(user.getEmail());
     }
