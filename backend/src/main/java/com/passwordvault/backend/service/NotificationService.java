@@ -46,11 +46,21 @@ public class NotificationService {
 
         if (user != null && user.getEmail() != null) {
 
-            emailService.sendNotificationEmail(
-                    user.getEmail(),
-                    title,
-                    message
-            );
+            try {
+
+                emailService.sendNotificationEmail(
+                        user.getEmail(),
+                        title,
+                        message
+                );
+
+            } catch (Exception e) {
+
+                System.out.println(
+                        "Email notification failed: "
+                                + e.getMessage()
+                );
+            }
         }
 
         return savedNotification;
